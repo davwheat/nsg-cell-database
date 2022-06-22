@@ -177,4 +177,5 @@ val = mergeRatCellLists("eutra")
 
 print(f"\nReturn code {val}")
 
-exit(val)
+if (val == Code.Error):
+    exit(1)
