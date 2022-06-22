@@ -44,7 +44,7 @@ You can then open a Pull Request back to this repository with your changes.
 
 The cell list is generated from individual files within the `fragments` folder.
 
-The general path structure is: `fragments/<2-letter country code>/<region>/<town/city>/cells_<rat>.csv`, where `<rat>` is either `eutra`, `wcdma`, `tdscdma`, `cdma` or `gsm`.
+The general path structure is: `fragments/<2-letter country code>/<PLMN>/<region>/<town/city>/cells_<rat>.csv`, where `<rat>` is either `eutra`, `wcdma`, `tdscdma`, `cdma` or `gsm`.
 
 Only files ending in `.csv` are automatically compiled into the complete list. This means that youcan create additional documentation files within any subdirectory of `fragments/` to detail naming schemes and other important info. Consensus should be that these files are named `README.md` and are found as high up within the folder structure as possible.
 
@@ -69,6 +69,8 @@ The structure of the CSV file varies between radio access technologies.
 Initially, this repository will focus on LTE cells, but contributions for other radio access technologies is more than welcome.
 
 ##### LTE
+
+File header: `ECellID,CellName,Longitude,Latitude,PCI,EARFCN,Azimuth`
 
 | Field name | Description                                                    | Type                       | Example                                           |
 | :--------: | -------------------------------------------------------------- | -------------------------- | ------------------------------------------------- |
