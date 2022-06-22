@@ -34,7 +34,7 @@ jobs:
       - name: Commit merged CSV
         uses: stefanzweifel/git-auto-commit-action@v4
         # Only run on pushes to main
-        if: ${{ github.ref != 'refs/heads/main' || github.event_name != 'push' }}
+        if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'push' }}
         with:
           commit_message: "ci: commit merged cells CSV"
           commit_options: "--no-verify --signoff"
