@@ -27,6 +27,10 @@ jobs:
         run: |
           python merge_csvs.py
 
+      - name: Diff new and old merged CSVs
+        run: |
+          git diff ./merged_cells_*.csv
+
       - name: Commit merged CSV
         uses: stefanzweifel/git-auto-commit-action@v4
         # Only run on pushes to main
