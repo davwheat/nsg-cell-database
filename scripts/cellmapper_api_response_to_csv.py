@@ -64,18 +64,20 @@ def loadTowerData(mcc: int, mnc: int, tac: int, site_id: int):
         addressParts.append(siteAddress["road"])
     if "neighbourhood" in siteAddress:
         addressParts.append(siteAddress["neighbourhood"])
+    if "village" in siteAddress:
+        addressParts.append(siteAddress["village"])
+    if "suburb" in siteAddress:
+        addressParts.append(siteAddress["suburb"])
     if "town" in siteAddress:
         addressParts.append(siteAddress["town"])
-    if "city" in siteAddress:
-        addressParts.append(siteAddress["city"])
 
     postcode = siteAddress["postcode"] if "postcode" in siteAddress else None
 
     if (postcode is not None) and (postcode != ""):
-        finalAddressParts = addressParts[:2]
+        finalAddressParts = addressParts[:3]
         finalAddressParts.append(postcode)
     else:
-        finalAddressParts = addressParts[:3]
+        finalAddressParts = addressParts[:4]
 
     siteName = " | ".join(finalAddressParts)
 
