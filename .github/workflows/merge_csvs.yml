@@ -1,11 +1,12 @@
-name: Python application
+name: Validate and merge CSVs
 
 on:
   push:
   pull_request:
 
 jobs:
-  build:
+  validate:
+    name: Validate and merge CSVs
     runs-on: ubuntu-latest
 
     steps:
