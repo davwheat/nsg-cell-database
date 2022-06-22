@@ -1,0 +1,36 @@
+name: Python application
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run merge script
+        working-directory: ./scripts
+        run: |
+          python merge_csvs.py
+
+      - name: Commit merged CSV
+        uses: stefanzweifel/git-auto-commit-action@v4
+        # Only run on pushes to main
+        if: ${{ github.ref != 'refs/heads/main' || github.event_name != 'push' }}
+        with:
+          commit_message: "ci: commit merged cells CSV"
+          commit_options: "--no-verify --signoff"
+          file_pattern: "./merged_cells_*.csv"
