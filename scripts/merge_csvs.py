@@ -176,3 +176,5 @@ def mergeRatCellLists(rat) -> Code:
 val = mergeRatCellLists("eutra")
 
 print(f"\nReturn code {val}")
+
+exit(val)
