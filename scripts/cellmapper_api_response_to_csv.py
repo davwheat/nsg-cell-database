@@ -4,6 +4,28 @@ from requests import request
 CELLMAPPER_API_ROOT = "https://api.cellmapper.net/v6"
 CELLS = []
 
+CELLMAPPER_COOKIE_STR = None
+
+try:
+    with open("./cm_cookie") as f:
+        CELLMAPPER_COOKIE_STR = f.read()
+except FileNotFoundError:
+    CELLMAPPER_COOKIE_STR = None
+
+# Helps to bypass Captcha checks
+SPOOF_HEADERS = {
+    "Accept": "application/json, text/javascript, */*; q=0.01",
+    "sec-ch-ua": '" Not A;Brand";v="99", "Chromium";v="102", "Google Chrome";v="102"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "Windows",
+    "User-Agent": " Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36",
+    "Origin": "https://www.cellmapper.net",
+}
+
+if CELLMAPPER_COOKIE_STR != None:
+    print("Using CellMapper cookie from file")
+    SPOOF_HEADERS["Cookie"] = CELLMAPPER_COOKIE_STR
+
 
 class CSVCell:
     def __init__(self, ecellid, cellname, longitude, latitude, pci, earfcn, azimuth):
@@ -36,6 +58,10 @@ def loadTowerData(mcc: int, mnc: int, tac: int, site_id: int):
 
         status = data["statusCode"]
 
+    if "responseData" not in data:
+        print("Failed to load tower data")
+        return
+
     towerData = data["responseData"]
 
     # If towerData is string
@@ -62,10 +88,10 @@ def loadTowerData(mcc: int, mnc: int, tac: int, site_id: int):
 
     if "road" in siteAddress:
         addressParts.append(siteAddress["road"])
-    if "neighbourhood" in siteAddress:
-        addressParts.append(siteAddress["neighbourhood"])
-    if "village" in siteAddress:
-        addressParts.append(siteAddress["village"])
+    # if "neighbourhood" in siteAddress:
+    #     addressParts.append(siteAddress["neighbourhood"])
+    # if "village" in siteAddress:
+    #     addressParts.append(siteAddress["village"])
     if "suburb" in siteAddress:
         addressParts.append(siteAddress["suburb"])
     if "town" in siteAddress:
