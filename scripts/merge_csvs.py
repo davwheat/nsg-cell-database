@@ -1,6 +1,7 @@
 import enum
 import glob
 import pandas as pd
+import csv
 
 from typing import Any, List, NamedTuple, Tuple
 
@@ -57,8 +58,6 @@ def validateEutraCell(
 
                 if len(stringified) > 128:
                     return Code.Error, f"Invalid value for `{col}` (above max length of 128 chars)"
-                if ',' in stringified:
-                    return Code.Error, f"Invalid value for `{col}` (contains comma)"
 
             case "Longitude":
                 # Must be float
@@ -167,10 +166,12 @@ def mergeRatCellLists(rat) -> Code:
     print("--------------")
     print(f"Merging cells for {rat}")
     with open(f"../merged_cells_{rat}.csv", "w") as f:
-        f.write(ValidEutraHeader + "\n")
+        writer = csv.writer(f, quoting=csv.QUOTE_NONNUMERIC)
+
+        writer.writerow(EutraHeaders)
 
         for cell in cells_hash_map.values():
-            f.write(",".join(str(x) for x in cell.values()) + "\n")
+            writer.writerow(cell.values())
 
     print(f"Successfully merged {len(cells_hash_map.keys())} cells for {rat}")
 
