@@ -92,7 +92,7 @@ def validateEutraCell(
                 # Must be int between 0 and 360
                 if not isinstance(getattr(cellCsv, col), int):
                     return Code.Error, f"`{col}` must be an int"
-                if getattr(cellCsv, col) < 0 or getattr(cellCsv, col) > 360:
+                if getattr(cellCsv, col) < -1 or getattr(cellCsv, col) > 360:
                     return Code.Error, f"Invalid value for `{col}` (outside range: 0 to 360)"
 
     return Code.Success, ""
