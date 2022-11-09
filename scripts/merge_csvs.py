@@ -131,6 +131,9 @@ def mergeRatCellLists(rat) -> Code:
             print(f"Got     : {header}")
             return Code.Error
 
+        # Cap CellName to 128 chars
+        df['CellName'] = df['CellName'].str[:128]
+
         # Iterate over all rows
         # https://medium.com/@formigone/stop-using-df-iterrows-2fbc2931b60e
         for row in df.itertuples():
