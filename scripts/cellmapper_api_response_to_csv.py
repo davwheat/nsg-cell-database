@@ -1,4 +1,3 @@
-import json
 from requests import request
 
 CELLMAPPER_API_ROOT = "https://api.cellmapper.net/v6"
@@ -38,12 +37,12 @@ class CSVCell:
         self.azimuth = azimuth
 
     def toCsvString(self):
-        return f"{self.ecellid},{self.cellname},{self.longitude},{self.latitude},{self.pci},{self.earfcn},{self.azimuth}"
+        return f'{self.ecellid},"{self.cellname}",{self.longitude},{self.latitude},{self.pci},{self.earfcn},{self.azimuth}'
 
 
-def loadTowerData(mcc: int, mnc: int, tac: int, site_id: int):
-    query = {"MCC": mcc, "MNC": mnc, "Region": tac, "Site": site_id, "RAT": "LTE"}
-
+def sendRequestWithCaptchaCheck(
+    url, method="GET", params=None, headers=None, data=None
+):
     status = "START"
 
     while status in ["START", "NEED_RECAPTCHA"]:
@@ -52,17 +51,55 @@ def loadTowerData(mcc: int, mnc: int, tac: int, site_id: int):
                 "Go to https://cellmapper.net and complete the ReCaptcha, then hit ENTER..."
             )
 
-        data = request(
-            "GET", f"{CELLMAPPER_API_ROOT}/getTowerInformation", params=query
-        ).json()
+        data = request(method, url, params=params, headers=headers, data=data).json()
 
         status = data["statusCode"]
 
     if "responseData" not in data:
-        print("Failed to load tower data")
-        return
+        print("Failed to fetch URI:", url)
+        return None
 
-    towerData = data["responseData"]
+    return data["responseData"]
+
+
+def findTowersInBoundingBox(
+    mcc: int, mnc: int, latNE: float, lonNE: float, latSW: float, lonSW: float
+):
+    # https://api.cellmapper.net/v6/getTowers
+    # ?MCC=234&MNC=30
+    # &RAT=LTE
+    # &boundsNELatitude=51.17653502456466
+    # &boundsNELongitude=-0.13659255219250147
+    # &boundsSWLatitude=51.06011056714888
+    # &boundsSWLongitude=-0.24746108529925182
+    # &filterFrequency=false&showOnlyMine=false&showUnverifiedOnly=false&showENDCOnly=false
+
+    query = {
+        "MCC": mcc,
+        "MNC": mnc,
+        "RAT": "LTE",
+        "boundsNELatitude": latNE,
+        "boundsNELongitude": lonNE,
+        "boundsSWLatitude": latSW,
+        "boundsSWLongitude": lonSW,
+        "filterFrequency": False,
+        "showOnlyMine": False,
+        "showUnverifiedOnly": False,
+        "showENDCOnly": False,
+    }
+
+    data = sendRequestWithCaptchaCheck(f"{CELLMAPPER_API_ROOT}/getTowers", params=query)
+
+    for tower in data:
+        loadTowerData(mcc, mnc, tower["regionID"], tower["siteID"])
+
+
+def loadTowerData(mcc: int, mnc: int, tac: int, site_id: int):
+    query = {"MCC": mcc, "MNC": mnc, "Region": tac, "Site": site_id, "RAT": "LTE"}
+
+    towerData = sendRequestWithCaptchaCheck(
+        f"{CELLMAPPER_API_ROOT}/getTowerInformation", params=query
+    )
 
     # If towerData is string
     if isinstance(towerData, str):
@@ -79,6 +116,7 @@ def loadTowerData(mcc: int, mnc: int, tac: int, site_id: int):
         "limit": 1,
         "callback": "?",
     }
+
     siteAddress = request(
         "GET", "https://nominatim.openstreetmap.org/reverse", params=locationQuery
     ).json()["address"]
@@ -105,7 +143,7 @@ def loadTowerData(mcc: int, mnc: int, tac: int, site_id: int):
     else:
         finalAddressParts = addressParts[:4]
 
-    siteName = " | ".join(finalAddressParts)
+    siteName = ", ".join(finalAddressParts)
 
     arfcns = towerData["channels"]
 
@@ -114,6 +152,10 @@ def loadTowerData(mcc: int, mnc: int, tac: int, site_id: int):
     cellIds = list(cells.keys())
 
     for i, cellId in enumerate(cellIds):
+        if "PCI" not in cells[cellId]:
+            print(f"Missing PCI for {mcc}-{mnc} {site_id} cell {cellId}")
+            continue
+
         cell = CSVCell(
             cellId,
             siteName,
@@ -130,15 +172,25 @@ def loadTowerData(mcc: int, mnc: int, tac: int, site_id: int):
 mcc = input("Enter MCC: ")
 mnc = input("Enter MNC: ")
 
-while True:
-    tac = input("Enter TAC (blank to export all cells to CSV): ")
+# while True:
+#     tac = input("Enter TAC (blank to export all cells to CSV): ")
 
-    if tac == "":
-        break
+#     if tac == "":
+#         break
 
-    site_id = input("Enter Site ID (eNB): ")
+#     site_id = input("Enter Site ID (eNB): ")
 
-    loadTowerData(mcc, mnc, tac, site_id)
+#     if site_id == "":
+#         continue
+
+#     loadTowerData(mcc, mnc, tac, site_id)
+
+latNE = input("Enter NE lat: ")
+lonNE = input("Enter NE lon: ")
+latSW = input("Enter SW lat: ")
+lonSW = input("Enter SW lon: ")
+
+findTowersInBoundingBox(mcc, mnc, latNE, lonNE, latSW, lonSW)
 
 print("Exporting cells to CSV...")
 

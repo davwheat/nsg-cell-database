@@ -72,12 +72,12 @@ Initially, this repository will focus on LTE cells, but contributions for other 
 
 File header: `ECellID,CellName,Longitude,Latitude,PCI,EARFCN,Azimuth`
 
-| Field name | Description                                                    | Type                       | Example                                           |
-| :--------: | -------------------------------------------------------------- | -------------------------- | ------------------------------------------------- |
-|  ECellID   | The identifying value for the LTE cell in the PLMN.            | 28-bit integer             | `128121198`                                       |
-|  CellName  | Name shown for the cell in the cell list. Location, then info. | String, max 128 chars      | `Marchants Way, Burgess Hill - O2 Orion monopole` |
-| Longitude  | Longitude of the site.                                         | Float                      | `0.13727388291219622`                             |
-|  Latitude  | Latitude of the site.                                          | Float                      | `50.96678663980859`                               |
-|   EARFCN   | EARFCN of the cell.                                            | Integer (0 - 70000)        | `6400`                                            |
-|    PCI     | LTE physical channel identity                                  | Integer (0 - 511)          | `172`                                             |
-|  Azimuth   | Bearing of the centre of the cell.                             | Integer (0 to 359 degrees) | Often `0`, `120` or `240`                         |
+| Field name | Description                                                          | Type                       | Example                                           |
+| :--------: | -------------------------------------------------------------------- | -------------------------- | ------------------------------------------------- |
+|  ECellID   | The identifying value for the LTE cell (**not** eNB ID) in the PLMN. | 28-bit integer             | `128121198`                                       |
+|  CellName  | Name shown for the cell in the cell list. Location, then info.       | String, max 128 chars      | `Marchants Way, Burgess Hill - O2 Orion monopole` |
+| Longitude  | Longitude of the site.                                               | Float                      | `0.13727388291219622`                             |
+|  Latitude  | Latitude of the site.                                                | Float                      | `50.96678663980859`                               |
+|   EARFCN   | EARFCN of the cell.                                                  | Integer (0 - 70000)        | `6400`                                            |
+|    PCI     | LTE physical channel identity                                        | Integer (0 - 511)          | `172`                                             |
+|  Azimuth   | Bearing of the centre of the cell.                                   | Integer (0 to 359 degrees) | Often `0`, `120` or `240`                         |
