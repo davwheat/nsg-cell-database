@@ -30,7 +30,7 @@ jobs:
 
       - name: Diff new and old merged CSVs
         run: |
-          git diff ./merged_cells_*.csv
+          git diff ./merged
 
       - name: Commit merged CSV
         uses: stefanzweifel/git-auto-commit-action@v4
@@ -39,4 +39,4 @@ jobs:
         with:
           commit_message: "ci: commit merged cells CSV"
           commit_options: "--no-verify --signoff"
-          file_pattern: "./merged_cells_*.csv"
+          file_pattern: "merged/
