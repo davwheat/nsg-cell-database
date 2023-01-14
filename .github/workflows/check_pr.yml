@@ -16,7 +16,7 @@ jobs:
         with:
           filters: |
             merged_csvs:
-              - './merged_cells_*.csv'
+              - './merged/**'
 
       - name: Warn of merged cells changes
         if: steps.changes.outputs.merged_csvs == 'true'

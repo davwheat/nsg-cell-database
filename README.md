@@ -10,6 +10,8 @@ NSG offers a feature called cell databases, which allows it to label cells on th
 
 The aim of this repository is to be an up-to-date source of cells across the globe(?) which anyone can contribute to, in order to better use Network Signal Guru.
 
+**To use this project, download the appropriate csv file(s) in the `merged` folder based on the PLMNs you want to load.**
+
 ## Automatic checks
 
 Continuous integration (CI) is provided through GitHub Actions and does a few useful things:

@@ -2,6 +2,8 @@ import enum
 import glob
 import pandas as pd
 import csv
+import os
+from pathlib import Path
 
 from typing import Any, List, NamedTuple, Tuple
 
@@ -112,77 +114,88 @@ def mergeRatCellLists(rat) -> Code:
         return Code.Error
 
     # Get all cell files matching the rat
-    cell_files = glob.glob(f"../fragments/**/cells_{rat}.csv", recursive=True)
 
-    # Store cells in hash map for O(1) lookup -- keys are of format `cellid__arfcn`
-    cells_hash_map = {}
+    # allPlmns = [ f.path for f in os.scandir("../fragments/*/*") if f.is_dir() ]
+    # allPlmnFolders = [Path(f) for f in glob.glob("../fragments/*/*")]
+    allPlmns = [os.path.basename(f) for f in glob.glob("../fragments/*/*")]
 
-    print(f"Found {len(cell_files)} cell files for {rat}")
+    for plmn in allPlmns:
+        cell_files = glob.glob(f"../fragments/*/{plmn}/**/cells_{rat}.csv", recursive=True)
 
-    if (len(cell_files) == 0):
-        print(f"No cell files found for {rat}")
-        return Code.Error
+        # Store cells in hash map for O(1) lookup -- keys are of format `cellid__arfcn`
+        cells_hash_map = {}
 
-    # Iterate over all cell files
-    for cell_file in cell_files:
-        print(f"Processing {cell_file}")
+        print(f"Found {len(cell_files)} cell files for {plmn} - {rat}")
 
-        # Open cell file
-        df = pd.read_csv(cell_file)
-
-        # Validate header
-        header = ",".join(df.columns.values.tolist())
-
-        if header != ValidEutraHeader:
-            print(f"Invalid header in `{cell_file}`")
-            print(f"Expected: {ValidEutraHeader}")
-            print(f"Got     : {header}")
+        if (len(cell_files) == 0):
+            print(f"No cell files found for {plmn} - {rat}")
             return Code.Error
 
-        # Cap CellName to 128 chars
-        df['CellName'] = df['CellName'].str[:128]
+        # Iterate over all cell files
+        for cell_file in cell_files:
+            print(f"Processing {cell_file}")
 
-        # Iterate over all rows
-        # https://medium.com/@formigone/stop-using-df-iterrows-2fbc2931b60e
-        for row in df.itertuples():
-            # Include header, and start from 1, not 0
-            row_num = row.Index + 2
+            # Open cell file
+            df = pd.read_csv(cell_file)
 
-            # Validate cell
-            code, msg = validateEutraCell(row)
+            # Validate header
+            header = ",".join(df.columns.values.tolist())
 
-            if code == Code.Error:
-                print(f"Invalid cell in `{cell_file}`, row number {row_num}")
-                print(f"{msg}")
-                print(f"Row: {list(row)[1:]}")
-
+            if header != ValidEutraHeader:
+                print(f"Invalid header in `{cell_file}`")
+                print(f"Expected: {ValidEutraHeader}")
+                print(f"Got     : {header}")
                 return Code.Error
 
-            cell_key = f"{row.ECellID}__{row.EARFCN}__{row.PCI}"
+            # Cap CellName to 128 chars
+            df['CellName'] = df['CellName'].str[:128]
 
-            if cell_key in cells_hash_map:
-                print(f"Duplicate cell in `{cell_file}`, row number {row_num}")
-                print(f"Key already exists: {cell_key}")
-                print(f"Existing cell: ID = {cells_hash_map[cell_key]['ECellID']}, Name = {cells_hash_map[cell_key]['CellName']}")
-                return Code.Error
-            
-            row_dict = row._asdict()
-            del row_dict['Index']
+            # Iterate over all rows
+            # https://medium.com/@formigone/stop-using-df-iterrows-2fbc2931b60e
+            for row in df.itertuples():
+                # Include header, and start from 1, not 0
+                row_num = row.Index + 2
 
-            cells_hash_map[cell_key] = row_dict
+                # Validate cell
+                code, msg = validateEutraCell(row)
 
-    # Merge cells!
-    print("--------------")
-    print(f"Merging cells for {rat}")
-    with open(f"../merged_cells_{rat}.csv", "w") as f:
-        writer = csv.writer(f, quoting=csv.QUOTE_NONNUMERIC)
+                if code == Code.Error:
+                    print(f"Invalid cell in `{cell_file}`, row number {row_num}")
+                    print(f"{msg}")
+                    print(f"Row: {list(row)[1:]}")
 
-        writer.writerow(EutraHeaders)
+                    return Code.Error
 
-        for cell in cells_hash_map.values():
-            writer.writerow(cell.values())
+                cell_key = f"{row.ECellID}__{row.EARFCN}__{row.PCI}"
 
-    print(f"Successfully merged {len(cells_hash_map.keys())} cells for {rat}")
+                if cell_key in cells_hash_map:
+                    print(f"Duplicate cell in `{cell_file}`, row number {row_num}")
+                    print(f"Key already exists: {cell_key}")
+                    print(f"Existing cell: ID = {cells_hash_map[cell_key]['ECellID']}, Name = {cells_hash_map[cell_key]['CellName']}")
+                    return Code.Error
+                
+                row_dict = row._asdict()
+                del row_dict['Index']
+
+                cells_hash_map[cell_key] = row_dict
+
+        # Merge cells!
+        print("--------------")
+        print(f"Merging all cells for {rat}")
+
+        # create dir if doesn't exist
+        if not os.path.exists(f"../merged/{plmn}"):
+            os.makedirs(f"../merged/{plmn}")
+
+        with open(f"../merged/{plmn}/{plmn}_merged_cells_{rat}.csv", "w") as f:
+            writer = csv.writer(f, quoting=csv.QUOTE_NONNUMERIC)
+
+            writer.writerow(EutraHeaders)
+
+            for cell in cells_hash_map.values():
+                writer.writerow(cell.values())
+
+        print(f"Successfully merged {len(cells_hash_map.keys())} cells for {rat}")
 
     return Code.Success
 
