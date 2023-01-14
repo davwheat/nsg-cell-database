@@ -6,6 +6,9 @@ import csv
 from typing import Any, List, NamedTuple, Tuple
 
 
+df = None
+
+
 class Code(enum.Enum):
     Success = 0
     Error = 1
@@ -35,6 +38,7 @@ def validateEutraCell(
         Azimuth=Any,
     )
 ) -> Tuple[Code, str]:
+    global df
 
     for col in EutraHeaders:
         if col not in cellCsv._fields:
@@ -81,10 +85,12 @@ def validateEutraCell(
                     return Code.Error, f"Invalid value for `{col}` (outside range: 0 to 511)"
 
             case "EARFCN":
-                # Must be int between 0 and 70000
+                # Must be int between -1 and 70000
                 if not isinstance(getattr(cellCsv, col), int):
+                    print(df.index[type(df[col]) == 'float'].tolist())
                     return Code.Error, f"`{col}` must be an int"
-                if getattr(cellCsv, col) < 0 or getattr(cellCsv, col) > 70000:
+
+                if getattr(cellCsv, col) < -1 or getattr(cellCsv, col) > 70000:
                     return Code.Error, f"Invalid value for `{col}` (outside range: 0 to 70000)"
 
             case "Azimuth":
@@ -97,7 +103,10 @@ def validateEutraCell(
     return Code.Success, ""
 
 
+
 def mergeRatCellLists(rat) -> Code:
+    global df
+
     if not (rat in ["eutra", "wcdma", "tscdma", "cdma", "gsm"]):
         print(f"Invalid RAT: {rat}")
         return Code.Error
@@ -154,7 +163,7 @@ def mergeRatCellLists(rat) -> Code:
             if cell_key in cells_hash_map:
                 print(f"Duplicate cell in `{cell_file}`, row number {row_num}")
                 print(f"Key already exists: {cell_key}")
-                print(f"Existing cell: ID={cells_hash_map[cell_key]['ECellID']}, Name={cells_hash_map[cell_key]['CellName']}")
+                print(f"Existing cell: ID = {cells_hash_map[cell_key]['ECellID']}, Name = {cells_hash_map[cell_key]['CellName']}")
                 return Code.Error
             
             row_dict = row._asdict()
