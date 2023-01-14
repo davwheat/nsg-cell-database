@@ -42,7 +42,7 @@ You can then open a Pull Request back to this repository with your changes.
 
 ### Repository structure
 
-> ⚠️ **The full cell list is generated automatically and should not be edited directly. Changes made directly to this file will not be accepted.**
+> ⚠️ **The merged cell lists are generated automatically and should not be edited directly. Changes made directly to any files in the `merged` directory will not be accepted.**
 
 The cell list is generated from individual files within the `fragments` folder.
 
