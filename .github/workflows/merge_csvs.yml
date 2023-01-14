@@ -39,4 +39,4 @@ jobs:
         with:
           commit_message: "ci: commit merged cells CSV"
           commit_options: "--no-verify --signoff"
-          file_pattern: "merged/
+          file_pattern: "merged/"
